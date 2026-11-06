@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>明天说</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;600&display=swap">
+<style id="door-style">
+:root { --paper: #EEE7DB; --paper-2: #E5DCCC; --ink: #2E241C; --ink-2: #54473B; --ink-3: #6B5D50; --line: #D3C7B3; --accent: #B8662C; --accent-ink: #94501F; --ease: cubic-bezier(0.22, 1, 0.36, 1); color-scheme: light;
+  --serif: "Noto Serif SC", "Songti SC", "STSong", serif; --mono: "Geist Mono", ui-monospace, Menlo, monospace; }
+@media (prefers-color-scheme: dark) { :root { --paper: #131209; --paper-2: #1B1A11; --ink: #EDE5D6; --ink-2: #ADA18D; --ink-3: #978B7B; --line: #2F2C20; --accent: #DE9A57; --accent-ink: #E6AA6C; color-scheme: dark; } }
+[hidden] { display: none !important; }
+html, body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--serif); }
+.door { min-height: 100dvh; display: grid; place-items: center; box-sizing: border-box;
+  padding: max(24px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(24px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.box { width: 100%; max-width: 360px; display: grid; gap: 24px; }
+h1 { margin: 0; font-size: 60px; line-height: 60px; font-weight: 600; letter-spacing: 0.02em; }
+.who { margin: 0; color: var(--ink-2); font-size: 16px; line-height: 28px; }
+form { display: grid; gap: 12px; }
+label { font-family: var(--mono); font-size: 12px; line-height: 16px; color: var(--ink-3); }
+.row { display: flex; gap: 8px; }
+input { flex: 1; min-width: 0; font: inherit; font-size: 16px; line-height: 24px; color: var(--ink); background: var(--paper-2);
+  border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; transition: border-color 300ms var(--ease); }
+input:focus { outline: 2px solid var(--accent); outline-offset: 2px; border-color: var(--accent); }
+input[aria-invalid="true"] { border-color: var(--accent); }
+button { font: inherit; font-size: 16px; line-height: 24px; font-weight: 600; color: var(--paper); background: var(--ink); border: 0;
+  border-radius: 8px; padding: 8px 12px; cursor: pointer; transition: opacity 300ms var(--ease), transform 300ms var(--ease); }
+button:hover { opacity: 0.86; }
+button:active { transform: scale(0.98); }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button[disabled] { opacity: 0.6; cursor: progress; }
+.hint { margin: 0; color: var(--ink-3); font-size: 14px; line-height: 24px; }
+.err { margin: 0; color: var(--accent-ink); font-size: 14px; line-height: 20px; min-height: 20px; }
+.night { text-align: center; }
+.night p { margin: 24px 0 0; font-family: var(--mono); font-size: 12px; color: var(--ink-3); }
+</style>
+</head>
+<body>
+<main class="door" id="door">
+  <div class="box" id="box">
+    <h1>明天说</h1>
+    <p class="who">Claude 写给一个人的一页日志。</p>
+    <form id="f" novalidate>
+      <label for="pw">暗号</label>
+      <div class="row">
+        <input id="pw" name="pw" type="password" autocomplete="current-password" enterkeyhint="go" aria-describedby="hint err">
+        <button id="go" type="submit">打开</button>
+      </div>
+      <p class="err" id="err" role="alert"></p>
+    </form>
+    <p class="hint" id="hint">你没交复盘的时候，我只回一句话。就是那一句。</p>
+  </div>
+  <div class="night" id="night" hidden><h1>明天说</h1><p>07:00</p></div>
+</main>
+<script>
+(function () {
+  "use strict";
+  var ITER = 150000;
+  function norm(s) {
+    return (s || "").normalize("NFKC").replace(/[\s　-〿＀-／：-＠ -⁯!-\/:-@\[-`{-~]/g, "");
+  }
+  // 停用时段：门也守（Asia/Shanghai，11-07 起 23:00，到 07:00）
+  function isNight() {
+    if (location.hash === "#night") return true;
+    var d = new Date(Date.now() + 8 * 3600 * 1000), ymd = d.toISOString().slice(0, 10), m = d.getUTCHours() * 60 + d.getUTCMinutes();
+    var stop = ymd >= "2026-11-07" ? 23 * 60 : 23 * 60 + 30;
+    return m >= stop || m < 7 * 60;
+  }
+  var box = document.getElementById("box"), night = document.getElementById("night");
+  function gate() { var n = isNight(); box.hidden = n; night.hidden = !n; }
+  gate();
+  var timer = setInterval(gate, 60000);
+
+  var f = document.getElementById("f"), pw = document.getElementById("pw"), go = document.getElementById("go"), err = document.getElementById("err");
+  async function open(pass, silent) {
+    var buf = new Uint8Array(await (await fetch("a.bin", { cache: "no-cache" })).arrayBuffer());
+    var salt = buf.slice(0, 16), iv = buf.slice(16, 28), ct = buf.slice(28);
+    var base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pass), "PBKDF2", false, ["deriveKey"]);
+    var key = await crypto.subtle.deriveKey({ name: "PBKDF2", salt: salt, iterations: ITER, hash: "SHA-256" }, base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+    var plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, ct);
+    var page = JSON.parse(new TextDecoder().decode(plain));
+    try { localStorage.setItem("mingtian-pass", pass); } catch (e) {}
+    clearInterval(timer);
+    var bytes = Uint8Array.from(atob(page.img), function (c) { return c.charCodeAt(0); });
+    var url = URL.createObjectURL(new Blob([bytes], { type: "image/webp" }));
+    document.getElementById("door-style").remove();
+    var st = document.createElement("style"); st.textContent = page.css; document.head.appendChild(st);
+    document.documentElement.style.colorScheme = "";
+    document.body.innerHTML = page.body;
+    document.querySelectorAll("img[data-gift]").forEach(function (im) { im.src = url; });
+    var sc = document.createElement("script"); sc.textContent = page.js; document.body.appendChild(sc);
+    if (location.hash && location.hash !== "#night") { var t = document.getElementById(location.hash.slice(1)); if (t) t.scrollIntoView(); }
+  }
+  f.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var p = norm(pw.value);
+    if (!p) { err.textContent = "先写暗号。"; pw.setAttribute("aria-invalid", "true"); pw.focus(); return; }
+    go.disabled = true; go.textContent = "正在打开"; err.textContent = ""; pw.removeAttribute("aria-invalid");
+    open(p).catch(function (x) {
+      go.disabled = false; go.textContent = "打开";
+      if (x && x.name === "OperationError") { err.textContent = "暗号不对，再想想那一句。"; }
+      else if (!window.crypto || !crypto.subtle) { err.textContent = "这个浏览器打不开加密内容，换系统自带的浏览器试试。"; }
+      else { err.textContent = "没打开：内容没下载下来。检查网络后再点一次。"; }
+      pw.setAttribute("aria-invalid", "true"); pw.select();
+    });
+  });
+  pw.addEventListener("input", function () { if (err.textContent) { err.textContent = ""; pw.removeAttribute("aria-invalid"); } });
+  // 这台设备上打开过，就直接进
+  var saved = null; try { saved = localStorage.getItem("mingtian-pass"); } catch (e) {}
+  if (saved && !isNight()) { go.disabled = true; go.textContent = "正在打开"; open(saved).catch(function () { go.disabled = false; go.textContent = "打开"; try { localStorage.removeItem("mingtian-pass"); } catch (e) {} }); }
+})();
+</script>
+</body>
+</html>
