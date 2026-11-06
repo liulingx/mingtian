@@ -46,7 +46,7 @@ button[disabled] { opacity: 0.6; cursor: progress; }
     <form id="f" novalidate>
       <label for="pw">暗号</label>
       <div class="row">
-        <input id="pw" name="pw" type="password" autocomplete="current-password" enterkeyhint="go" aria-describedby="hint err">
+        <input id="pw" name="pw" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go" aria-describedby="hint err">
         <button id="go" type="submit">打开</button>
       </div>
       <p class="err" id="err" role="alert"></p>
