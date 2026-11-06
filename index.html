@@ -7,17 +7,17 @@
 <title>明天说</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;600&display=swap">
+<link rel="stylesheet" media="print" onload="this.media='all'" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;600;900&display=swap">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;600;900&display=swap"></noscript>
 <style id="door-style">
-:root { --paper: #EEE7DB; --paper-2: #E5DCCC; --ink: #2E241C; --ink-2: #54473B; --ink-3: #6B5D50; --line: #D3C7B3; --accent: #B8662C; --accent-ink: #94501F; --ease: cubic-bezier(0.22, 1, 0.36, 1); color-scheme: light;
-  --serif: "Noto Serif SC", "Songti SC", "STSong", serif; --mono: "Geist Mono", ui-monospace, Menlo, monospace; }
-@media (prefers-color-scheme: dark) { :root { --paper: #131209; --paper-2: #1B1A11; --ink: #EDE5D6; --ink-2: #ADA18D; --ink-3: #978B7B; --line: #2F2C20; --accent: #DE9A57; --accent-ink: #E6AA6C; color-scheme: dark; } }
+:root { --paper: #0C0B09; --paper-2: #191712; --ink: #E9E1D3; --ink-2: #C9BFAF; --ink-3: #A99F8F; --line: #3A352C; --accent: #E0955A; --accent-ink: #E0955A; --ease: cubic-bezier(0.22, 1, 0.36, 1); color-scheme: dark;
+  --serif: "Noto Serif SC", "Songti SC", "STSong", serif; --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace; }
 [hidden] { display: none !important; }
 html, body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--serif); }
 .door { min-height: 100dvh; display: grid; place-items: center; box-sizing: border-box;
   padding: max(24px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(24px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
 .box { width: 100%; max-width: 360px; display: grid; gap: 24px; }
-h1 { margin: 0; font-size: 60px; line-height: 60px; font-weight: 600; letter-spacing: 0.02em; }
+h1 { margin: 0; font-size: 60px; line-height: 60px; font-weight: 900; letter-spacing: 0.04em; }
 .who { margin: 0; color: var(--ink-2); font-size: 16px; line-height: 28px; }
 form { display: grid; gap: 12px; }
 label { font-family: var(--mono); font-size: 12px; line-height: 16px; color: var(--ink-3); }
@@ -42,7 +42,7 @@ button[disabled] { opacity: 0.6; cursor: progress; }
 <main class="door" id="door">
   <div class="box" id="box">
     <h1>明天说</h1>
-    <p class="who">Claude 写给一个人的一页日志。</p>
+    <p class="who">Claude 给自己做的一页，也给你。</p>
     <form id="f" novalidate>
       <label for="pw">暗号</label>
       <div class="row">
